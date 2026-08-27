@@ -1,23 +1,142 @@
 aid: openbao
 name: OpenBao
-description: 'OpenBao is a company surfaced via the API Evangelist harvest backlog (source: self-hosted-agent-stack)
-  and added to the network as a stub for full-pipeline profiling.'
+description: >-
+  OpenBao is an open source, community-driven identity-based secrets and encryption management
+  system, forked from HashiCorp Vault in 2023 and governed by the Linux Foundation as a sandbox
+  project of the Open Source Security Foundation (OpenSSF). It stores and tightly controls access
+  to tokens, passwords, certificates and encryption keys, and exposes every one of its capabilities
+  — key/value secrets, dynamic database credentials, PKI issuance, transit encryption, leasing and
+  revocation, policy and namespace administration, seal/unseal and cluster operations — through a
+  single JSON HTTP API prefixed with /v1/. OpenBao is self-hosted software rather than a hosted
+  service, so there is no vendor-operated base URL: the API is served by whatever instance an
+  operator runs, and the CLI, the web UI and the official Go client all speak the same HTTP API.
+  The machine-readable OpenAPI document is generated per instance at runtime from the mounted
+  backends and is served at /v1/sys/internal/specs/openapi rather than published as a static file.
 url: https://raw.githubusercontent.com/api-evangelist/openbao/refs/heads/main/apis.yml
+image: https://raw.githubusercontent.com/openbao/artwork/main/color/openbao-color.png
 x-type: company
 x-source: harvest:self-hosted-agent-stack
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-27'
 modified: '2026-08-27'
 tags:
-- Company
-apis: []
+- Secrets Management
+- Security
+- Identity and Access Management
+- Encryption
+- Certificates
+- PKI
+- Key Management
+- Open Source
+- Self-Hosted
+- Linux Foundation
+- DevOps
+- Infrastructure
+apis:
+- aid: openbao-http-api
+  name: OpenBao HTTP API
+  description: >-
+    The OpenBao HTTP API gives full access to every OpenBao capability over REST-like HTTP verbs.
+    All routes are prefixed with /v1/ and the API is versioned only at that prefix. Authentication
+    is by client token, supplied either in the X-Vault-Token header or as an Authorization Bearer
+    token; each auth method additionally exposes unauthenticated login endpoints. Namespaces are
+    selected with the X-Vault-Namespace header or by full path. Requests and responses are JSON,
+    LIST is used as an HTTP verb alongside GET/POST/PUT/PATCH/DELETE, and errors are returned in a
+    common {"errors": [...]} envelope for any status >= 400.
+  humanURL: https://openbao.org/docs/api/
+  baseURL: https://{bao_address}/v1
+  x-base-url-note: >-
+    TEMPLATED ON PURPOSE - do not "repair" this to a concrete host. OpenBao is self-hosted software
+    with no vendor-operated API endpoint, so there is no base URL for the project to publish and it
+    publishes none. Its own documentation uses http://127.0.0.1:8200/v1 throughout, which is a local
+    dev-mode instance rather than a service. {bao_address} is the address of whatever instance the
+    operator runs, named after the BAO_ADDR environment variable the CLI and docs use.
+    repair-api-bases.py reports verdict no-usable-base for this repo; that verdict is expected here
+    and is a property of the delivery model, not a gap in the profile.
+  tags:
+  - Secrets Management
+  - Security
+  - Encryption
+  - PKI
+  properties:
+  - type: APIReference
+    url: https://openbao.org/docs/api/
+  - type: Documentation
+    url: https://openbao.org/docs/
+  - type: Authentication
+    url: authentication/openbao-authentication.yml
+  - type: ErrorCatalog
+    url: errors/openbao-problem-types.yml
+  - type: Conventions
+    url: conventions/openbao-conventions.yml
+  - type: Idempotency
+    url: conventions/openbao-conventions.yml
+  - type: RateLimits
+    url: rate-limits/openbao-rate-limits.yml
+  - type: Webhooks
+    url: asyncapi/openbao-audit-events.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: DomainSecurity
+  url: security/openbao-domain-security.yml
 - type: Website
   url: https://openbao.org/
+- type: DeveloperPortal
+  url: https://openbao.org/docs/
+- type: Documentation
+  url: https://openbao.org/docs/
+- type: APIReference
+  url: https://openbao.org/docs/api/
+- type: GettingStarted
+  url: https://openbao.org/docs/get-started/developer-qs/
+- type: Support
+  url: https://openbao.org/community/
+- type: Blog
+  url: https://openbao.org/blog/
+- type: GitHubOrganization
+  url: https://github.com/openbao
+- type: Roadmap
+  url: https://github.com/openbao/openbao/issues/1974
+- type: TermsOfService
+  url: https://lfprojects.org/policies/terms-of-use/
+- type: PrivacyPolicy
+  url: https://lfprojects.org/policies/privacy-policy/
+- type: ChangeLog
+  url: changelog/openbao-changelog.yml
+- type: Deprecation
+  url: lifecycle/openbao-lifecycle.yml
+- type: Lifecycle
+  url: lifecycle/openbao-lifecycle.yml
+- type: Packages
+  url: packages/openbao-packages.yml
+- type: SDKs
+  url: packages/openbao-packages.yml
+- type: CLI
+  url: cli/openbao-cli.yml
+- type: Sandbox
+  url: sandbox/openbao-sandbox.yml
+- type: Conformance
+  url: conformance/openbao-conformance.yml
+- type: Compliance
+  url: conformance/openbao-conformance.yml
+- type: Security
+  url: security/openbao-vulnerability-disclosure.yml
+- type: VulnerabilityDisclosure
+  url: security/openbao-vulnerability-disclosure.yml
+- type: Protobuf
+  url: grpc/openbao-backend.proto
+- type: AgentSkill
+  url: skills/_index.yml
+- type: LLMsTxt
+  url: llms/openbao-llms.txt
+- type: Plans
+  url: plans/openbao-plans-pricing.yml
+x-enrichment:
+  date: '2026-08-27'
+  status: enriched
+  artifacts_added: 25
+  pass: local-v1
