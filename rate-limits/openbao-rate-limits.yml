@@ -1,0 +1,70 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/concepts/resource-quotas/ ; https://openbao.org/docs/api/system/rate-limit-quotas/ ; https://openbao.org/docs/api/#http-status-codes
+docs: https://openbao.org/docs/concepts/resource-quotas/
+name: OpenBao rate limits
+limit_count: 0
+model: operator-configured
+summary: >-
+  OpenBao ships no default rate limits and publishes no numeric quotas, because nobody operates
+  OpenBao except the person running it - there is no shared multi-tenant service to protect. What it
+  ships instead is the MECHANISM: rate limit quotas, which an operator creates through the API to
+  protect their own cluster. limit_count is therefore 0 as an honest zero, not an unmeasured gap, and
+  the useful thing to record for an agent is how the enforcement behaves when an operator has turned
+  it on.
+mechanism:
+  name: rate limit quotas
+  algorithm: token bucket
+  api: /sys/quotas/rate-limit/:name
+  global_config: /sys/quotas/config
+  scope_levels: [root/global, namespace, mount, full API path, auth mount role]
+  precedence: >-
+    Most specific wins - a path quota beats a mount quota, which beats a namespace quota, which beats
+    the global quota. A quota bound to an auth role takes precedence over all others for login
+    requests on that mount.
+  applied_per: unique client IP address, per node. Quotas are not replicated across nodes.
+  parameters:
+    rate: Maximum requests allowed in the interval. Float, must be positive.
+    interval: Duration the rate applies over. Default 1s.
+    block_interval: If non-zero, a client that trips the threshold is blocked from all further requests for this duration.
+    inheritable: Namespace quotas can be inherited by child namespaces. Root-namespace quotas are inheritable by default.
+    role: Restricts a quota to login requests made with a specific role on an auth mount.
+  exempt_paths:
+  - sys/generate-recovery-token/attempt
+  - sys/generate-recovery-token/update
+  - sys/generate-root/attempt
+  - sys/generate-root/update
+  - sys/health
+  - sys/seal-status
+  - sys/unseal
+  exempt_paths_note: Default exemptions; overridable with the rate_limit_exempt_paths configuration field.
+runtime_signal:
+  status_on_exhaustion: 429
+  status_ambiguity: >-
+    429 is ALSO the default health-check response for a standby node, so a client cannot tell a rate
+    limit from a standby redirect by status code alone and must read the errors[] body. This is worth
+    flagging to any agent implementing backoff.
+  response_headers:
+    ratelimit_standard: none
+    x_ratelimit: none
+    retry_after: not documented
+    note: >-
+      OpenBao documents no RateLimit-*, X-RateLimit-* or Retry-After response headers, and a code
+      search of the openbao/openbao repository for "Retry-After" returned no matches on 2026-08-27.
+      A client that trips a quota learns the limit only from the 429 and the error message, and must
+      learn block_interval out of band. This is the clearest agent-readiness gap in OpenBao's runtime
+      signalling and would be a small change to close.
+  observability:
+    metrics: Rate limiting state is exposed through telemetry metrics on each node.
+    audit: Optional rate-limit audit logging, toggled by enable_rate_limit_audit_logging (fixed in v2.6.2).
+other_limits:
+- name: max request size
+  value: 33554432
+  unit: bytes
+  note: 32MB per request, tunable per listener block, imposed to prevent denial of service.
+- name: pagination_limit
+  note: An ACL policy option capping how many entries a token may retrieve from a single LIST.
+- name: user lockout
+  url: https://openbao.org/docs/concepts/user-lockout/
+  note: Separate mechanism that locks out a user after repeated failed logins on supported auth methods.
+limits: []

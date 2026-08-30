@@ -1,0 +1,66 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/audit/http/ ; https://openbao.org/docs/audit/ ; https://openbao.org/docs/audit/socket/ ; https://openbao.org/docs/audit/syslog/
+name: OpenBao event and webhook surface
+asyncapi_published: false
+summary: >-
+  OpenBao publishes no AsyncAPI document and has no consumer-facing pub/sub or streaming API. What it
+  does have is an EGRESS event surface: audit devices, one of which - the http device - POSTs every
+  audited request and response to an operator-specified HTTPS endpoint. That is a real webhook in
+  everything but name, and it is the only mechanism by which an external system learns what happened
+  inside OpenBao without polling. It is captured here as a webhook surface, described exactly as the
+  docs describe it, and NOT dressed up as an AsyncAPI spec that does not exist.
+webhooks:
+  supported: true
+  style: audit-device egress
+  delivery:
+  - id: http
+    url: https://openbao.org/docs/audit/http/
+    transport: HTTP(S) POST to an operator-configured URI
+    enable: bao audit enable http uri=https://my-log-server.local/ingress
+    config:
+      uri: The remote server URI. Required. Passed through parseutil.ParsePath so it may reference an environment variable or a file.
+      headers: A JSON object of headers, shaped map[string][]string. Header values also go through parseutil.ParsePath. Headers with no values are ignored.
+    semantics:
+      retry: >-
+        None. The docs say plainly that this device does not attempt retry and is fully synchronous
+        with the request by default. A failed delivery is a lost audit event, and because audit
+        devices are on the request path a failing sink can affect request handling.
+      ordering: Synchronous with the request, so effectively in request order.
+      signing: none documented
+      replay: none
+    multiplicity: Multiple http devices can be enabled at different paths, each pointing at a different sink.
+    security_note: >-
+      The documentation carries an explicit warning that this device is sensitive because it can
+      connect to arbitrary servers, and recommends declarative audit configuration over granting
+      operators the ability to create the device via API (unsafe_allow_api_audit_creation=true).
+      HTTPS is required for production because audit payloads are sensitive.
+  - id: socket
+    url: https://openbao.org/docs/audit/socket/
+    transport: TCP, UDP or Unix socket
+  - id: syslog
+    url: https://openbao.org/docs/audit/syslog/
+    transport: syslog
+  - id: file
+    url: https://openbao.org/docs/audit/file/
+    transport: local file
+  payload:
+    format: JSON, one object per audited request and one per response
+    hashing: >-
+      Sensitive values are HMAC-hashed before being written. sys/audit-hash computes the same hash for
+      a given input so an operator can search audit logs for a known value without the plaintext ever
+      appearing in them.
+    correlation: The request_id in an API response matches the audit entry for that request.
+  catalog_published: false
+  catalog_note: >-
+    OpenBao publishes no enumerated catalog of event types. The audit stream is a firehose of every
+    request and response against the API surface, not a curated set of named business events, so there
+    is nothing to enumerate and nothing has been invented here.
+streaming:
+  supported: false
+  note: >-
+    No server-sent events, no WebSocket subscription API and no message-broker integration on the
+    consumer side. HashiCorp Vault's event-notification system did not come across the fork.
+  monitor_command: >-
+    bao monitor streams server LOG output over the API to a CLI client. It is an operator debugging
+    tool, not an event API, and is recorded here only so it is not mistaken for one.

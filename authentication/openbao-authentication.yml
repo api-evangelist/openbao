@@ -1,0 +1,90 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/api/ ; https://openbao.org/docs/auth/ ; https://openbao.org/docs/concepts/tokens/
+docs: https://openbao.org/docs/api/
+name: OpenBao authentication
+summary: >-
+  OpenBao is token-authenticated. Once an instance is unsealed, almost every operation requires a
+  client token. The token is sent either in the X-Vault-Token request header or as an Authorization
+  header using the Bearer <token> scheme. There is no OAuth 2.0 authorization-code flow for the
+  OpenBao API itself and therefore no scope surface - authorization is expressed as ACL policies
+  attached to the token, not as OAuth scopes. Tokens are obtained from an auth method: each auth
+  method exposes one or more UNAUTHENTICATED login endpoints, which are the only routes reachable
+  with no credential at all (alongside sys/health, sys/seal-status and the unseal/generate-root
+  attempt endpoints).
+schemes:
+- id: vault-token-header
+  type: apiKey
+  in: header
+  name: X-Vault-Token
+  description: The canonical way to present a client token. Used by the OpenBao CLI, UI and Go client.
+  primary: true
+- id: bearer-token
+  type: http
+  scheme: bearer
+  description: Equivalent alternative - Authorization Bearer <token>. Accepted anywhere X-Vault-Token is.
+- id: mutual-tls
+  type: mutualTLS
+  description: >-
+    The cert auth method authenticates a caller by TLS client certificate at POST /v1/auth/cert/login,
+    exchanging the certificate for a client token. mTLS is an auth METHOD here, not a transport-level
+    alternative to the token - the resulting token still authorizes subsequent calls.
+- id: openid-connect
+  type: openIdConnect
+  description: >-
+    The jwt auth method accepts both raw JWTs and a full OIDC login flow. Separately, OpenBao can ACT
+    AS an OIDC provider for third parties via the identity/oidc endpoints, serving its own
+    .well-known/openid-configuration and JWKS from the running instance.
+auth_methods:
+- id: token
+  path: auth/token
+  note: Built-in. Tokens created directly, with TTLs, renewal, orphaning and use-limits.
+- id: approle
+  path: auth/approle
+  note: RoleID + SecretID, intended for machines and CI.
+- id: cert
+  path: auth/cert
+  note: TLS client certificates.
+- id: jwt
+  path: auth/jwt
+  note: JWT and OIDC. Supports CEL-based roles.
+- id: kerberos
+  path: auth/kerberos
+- id: kubernetes
+  path: auth/kubernetes
+  note: Service-account token review against the cluster API.
+- id: ldap
+  path: auth/ldap
+- id: radius
+  path: auth/radius
+- id: userpass
+  path: auth/userpass
+authorization_model:
+  style: acl-policies
+  description: >-
+    Capabilities (create, read, update, patch, delete, list, sudo, deny) are granted per path glob by
+    an ACL policy written in HCL or JSON and managed at sys/policies/acl/:name. Policies attach to
+    tokens and to identity entities/groups. There are no OAuth scopes; sys/capabilities-self reports
+    what the calling token may do on a path.
+  sudo_paths: Some root-protected paths additionally require the sudo capability; the generated OpenAPI marks them with x-vault-sudo.
+  namespaces: Requests are scoped to a namespace by the X-Vault-Namespace header or an equivalent full path.
+mfa:
+  supported: true
+  note: Login MFA (TOTP, Duo, Okta, PingID) is configured under identity/mfa and enforced by login-enforcement objects.
+response_wrapping:
+  supported: true
+  header: X-Vault-Wrap-TTL
+  note: >-
+    Any response can be wrapped into a single-use token by sending X-Vault-Wrap-TTL. The caller
+    receives wrap_info instead of the payload and must unwrap at sys/wrapping/unwrap. This is
+    OpenBao's secure-introduction primitive and is unusual enough to be worth naming explicitly.
+unauthenticated_endpoints:
+- /v1/sys/health
+- /v1/sys/seal-status
+- /v1/auth/:method/login/... (per auth method)
+- /v1/sys/unseal
+- /v1/sys/generate-root/attempt
+- /v1/sys/generate-root/update
+notes:
+- The X-Vault-* header prefix is retained deliberately for API compatibility with HashiCorp Vault, which OpenBao was forked from.
+- The X-Vault-Request header must be present on requests routed through an OpenBao Proxy configured with require_request_header; the CLI and Go SDK always set it.

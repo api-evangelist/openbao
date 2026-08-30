@@ -1,0 +1,65 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/api/#http-status-codes
+docs: https://openbao.org/docs/api/
+name: OpenBao error catalog
+format: vendor-json
+rfc9457: false
+envelope:
+  media_type: application/json
+  shape: '{"errors": ["message", "another message"]}'
+  description: >-
+    A single common JSON structure is returned for every HTTP status greater than or equal to 400.
+    It carries only an array of human-readable strings - there is no machine-readable error code,
+    type URI, or per-field detail. OpenBao does NOT emit application/problem+json, so an agent has
+    to match on status code plus message text.
+  warnings_field: >-
+    Successful responses may carry a separate top-level "warnings" array; a 204-documented endpoint
+    can return 200 instead precisely when warnings were generated.
+  request_id_field: request_id is returned on data-bearing responses and is the correlation handle for audit logs.
+status_codes:
+- status: 200
+  title: Success with data
+- status: 204
+  title: Success, no data returned
+  remediation: Applications must accept both 200 and 204 as success; an endpoint documented as 204 may answer 200 when warnings are generated.
+- status: 400
+  title: Invalid request
+  detail: Missing or invalid data.
+- status: 403
+  title: Forbidden
+  detail: >-
+    Authentication details are incorrect, the token lacks access to this path or feature, or - when
+    CORS is enabled - the request came from a disallowed origin.
+- status: 404
+  title: Invalid path
+  detail: >-
+    The path may genuinely not exist, or the caller may lack permission to see it. OpenBao returns 404
+    in some cases deliberately to avoid state leakage. LIST endpoints with no results also return 404,
+    so 404 is NOT reliably "not found" for an agent.
+- status: 405
+  title: Unsupported operation
+  detail: Method inappropriate for the path, e.g. POST to a GET-only endpoint.
+- status: 429
+  title: Rate limited / standby node
+  detail: >-
+    Default return code for the health status of standby nodes, and the code returned when a rate
+    limit quota is exhausted. The two meanings share a status code, so an agent must read the body.
+- status: 500
+  title: Internal server error
+  remediation: Retry later; if it persists, report a bug.
+- status: 502
+  title: Upstream error
+  detail: OpenBao had to call a third party and that third party returned an error.
+- status: 503
+  title: Sealed or under maintenance
+  detail: OpenBao is down for maintenance or currently sealed. Retry after unseal.
+limits:
+  max_request_bytes: 33554432
+  note: A maximum request size of 32MB is imposed to prevent denial of service; tunable per listener block.
+error_code_registry:
+  published: false
+  note: >-
+    OpenBao publishes no numeric or symbolic error-code registry. Errors are free-text strings inside
+    the errors[] array. This is the single largest error-semantics gap in the API for an agent
+    consumer, and it is a straightforward thing for the project to fix.

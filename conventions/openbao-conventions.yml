@@ -1,0 +1,156 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/api/ ; https://openbao.org/docs/concepts/ ; https://openbao.org/blog/features-paginated-lists/ ; https://openbao.org/docs/api/secret/kv/kv-v2/ ; https://openbao.org/docs/api/system/leases/
+name: OpenBao API conventions
+summary: >-
+  Cross-cutting runtime semantics of the OpenBao HTTP API, read from the project's own documentation.
+  OpenBao is self-hosted, so every convention below is a property of the software an operator runs
+  rather than of a vendor-operated service.
+auth:
+  style: client token
+  transport: X-Vault-Token header, or Authorization Bearer <token>
+  see: authentication/openbao-authentication.yml
+versioning:
+  scheme: single path prefix
+  current: v1
+  detail: >-
+    All routes are prefixed with /v1/ and v1 is the only version that has ever existed. The docs carry
+    an explicit warning that OpenBao does NOT yet promise backwards compatibility even inside the v1
+    prefix - sys/ routes change rarely, but secrets engines and auth methods do change between minor
+    releases. Product version, not API version, is the thing to pin against.
+  see: lifecycle/openbao-lifecycle.yml
+http_semantics:
+  verbs: [GET, POST, PUT, PATCH, DELETE, LIST]
+  list_verb: >-
+    LIST is used as a literal HTTP verb throughout the API reference. GET with ?list=true is the
+    documented equivalent for clients or proxies that cannot emit a custom verb.
+  put_post: OpenBao treats PUT and POST as synonyms; engines run an existence check to decide whether an operation is a create or an update, which is what makes create-vs-update expressible in ACL policy.
+  patch: PATCH is supported on a growing set of paths (KV v2 patch, ACL policies as of v2.6.1) for partial updates.
+  content_type: application/json in both directions; OpenBao sets Content-Type on responses and does not require it on requests.
+  path_restriction: Path parameters cannot end in a period - OpenBao returns 404 "unsupported path".
+pagination:
+  style: cursor (after + limit)
+  params:
+    after: Optional entry key to begin listing after. Exclusive cursor.
+    limit: Maximum entries to return.
+  applies_to: LIST endpoints across engines (KV v2 metadata, PKI certificate lists, SSH roles, and others).
+  shipped_in: v2.0.0
+  acl_control: The pagination_limit ACL option caps how many entries a token may pull in one LIST; a fix in v2.6.1 closed a bypass where limit=0 or a negative limit evaded it.
+  note: This is a divergence from HashiCorp Vault, which has no paginated LIST.
+  source: https://openbao.org/blog/features-paginated-lists/
+idempotency:
+  supported: true
+  mechanism: check-and-set (compare-and-swap), not an Idempotency-Key header
+  header: null
+  detail: >-
+    OpenBao does not implement RFC-style Idempotency-Key replay protection. It implements optimistic
+    concurrency instead: KV v2 writes accept options.cas, which must equal the secret's current
+    version for the write to be accepted (cas=0 means "only if the key does not exist"). An engine or
+    a mount can be configured with cas_required=true to make the parameter mandatory on every write,
+    at which point blind overwrites become impossible. The same conditional-write idea appears as the
+    existence check that distinguishes create from update. For an agent this is stronger than an
+    idempotency key for the write-conflict case and weaker for the network-retry case: a retried
+    write with the same cas value fails rather than silently succeeding, which is safe but requires
+    the caller to re-read.
+  scope: per key/version
+  retention: n/a - state is the version counter on the object itself, not a stored request record
+  source: https://openbao.org/docs/api/secret/kv/kv-v2/
+dry_run_mode:
+  supported: partial
+  detail: >-
+    There is no universal dry-run flag. sys/capabilities-self answers "may this token do X on this
+    path" without performing it, ?help=1 on any path returns its documentation plus a scoped OpenAPI
+    fragment without side effects, and bao operator validate-config / operator diagnose check
+    configuration offline. Write operations themselves have no preview mode.
+reversibility:
+  grade: verified
+  summary: >-
+    OpenBao's write surface is unusually reversible for a secrets system, and the windows are stated
+    in the documentation rather than implied - which is what separates a documented reversal path from
+    a verified one.
+  operations:
+  - action: Delete a KV v2 secret version
+    operation: DELETE /v1/:mount/data/:path  (or POST /v1/:mount/delete/:path)
+    reversal: POST /v1/:mount/undelete/:path
+    window: >-
+      Until the version is destroyed, or until delete_version_after elapses, or until the version is
+      aged out by max_versions. Delete is explicitly a SOFT delete - the docs note the underlying
+      version data is not removed from storage.
+    window_source: https://openbao.org/docs/api/secret/kv/kv-v2/
+    reversible: true
+  - action: Destroy a KV v2 secret version
+    operation: POST /v1/:mount/destroy/:path
+    reversal: null
+    window: none
+    reversible: false
+    note: Permanently removes version data. This is the irreversible sibling of delete and the one an agent must never confuse with it.
+  - action: Delete KV v2 metadata
+    operation: DELETE /v1/:mount/metadata/:path
+    reversal: null
+    window: none
+    reversible: false
+    note: Deletes the key and ALL of its versions permanently.
+  - action: Overwrite a secret
+    operation: POST /v1/:mount/data/:path
+    reversal: read the prior version (GET .../data/:path?version=N) and re-write it
+    window: >-
+      Bounded by max_versions - the number of versions retained per key, default 10 when unset - and
+      by delete_version_after if configured. Once a version is aged out it is permanently deleted.
+    window_source: https://openbao.org/docs/api/secret/kv/kv-v2/
+    reversible: true
+  - action: Issue a lease (dynamic credential)
+    operation: any dynamic secrets engine read
+    reversal: POST /v1/sys/leases/revoke  (or revoke-prefix / revoke-force)
+    window: >-
+      Any time before the lease's own TTL expires; expiry then revokes automatically. Leases can also
+      be extended with sys/leases/renew up to their max TTL.
+    window_source: https://openbao.org/docs/api/system/leases/
+    reversible: true
+  - action: Issue a certificate (PKI)
+    operation: POST /v1/pki/issue/:role
+    reversal: POST /v1/pki/revoke
+    window: Until the certificate's own notAfter. Revocation is published via CRL and OCSP.
+    reversible: true
+  - action: Seal the instance
+    operation: POST /v1/sys/seal
+    reversal: POST /v1/sys/unseal (requires the unseal key shares)
+    window: Any time, but requires quorum of key holders - a seal an agent triggers cannot be undone by that agent alone.
+    reversible: true
+  - action: Disable a secrets engine or auth method
+    operation: DELETE /v1/sys/mounts/:path  |  DELETE /v1/sys/auth/:path
+    reversal: null
+    window: none
+    reversible: false
+    note: Revokes all secrets and tokens under the mount and deletes its data. One of the most destructive calls in the API.
+error_envelope:
+  shape: '{"errors": ["message"]}'
+  see: errors/openbao-problem-types.yml
+rate_limit_signal:
+  see: rate-limits/openbao-rate-limits.yml
+  summary: Operator-configured rate limit quotas; 429 on exhaustion; no RateLimit-* response headers documented.
+request_tracing:
+  field: request_id
+  location: top-level field on data-bearing JSON responses
+  note: >-
+    request_id is the correlation handle between an API response and the audit log entry for that
+    request. There is no X-Request-Id response header documented; the identifier lives in the body.
+  audit: All requests and responses are hashed and written to every enabled audit device.
+namespacing:
+  header: X-Vault-Namespace
+  note: Semantically equivalent to prefixing the namespace onto the request path.
+response_wrapping:
+  header: X-Vault-Wrap-TTL
+  unwrap: POST /v1/sys/wrapping/unwrap
+  note: Single-use token wrapping of any response, for secure introduction. See authentication artifact.
+warnings:
+  field: warnings
+  note: A successful response may carry non-fatal warnings; an endpoint documented as 204 returns 200 when it has warnings to report.
+field_expansion:
+  supported: false
+  note: No sparse-fieldset or expand parameter. Response shape is fixed per endpoint.
+metadata:
+  supported: true
+  note: KV v2 carries custom_metadata per key; identity entities and groups carry arbitrary metadata maps.
+size_limits:
+  max_request_bytes: 33554432
+  note: 32MB, tunable per listener.

@@ -1,0 +1,16 @@
+generated: '2026-08-27'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+hosts:
+- host: openbao.org
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct 26 06:17:20 2026 GMT
+  hsts: false
+domains:
+- domain: openbao.org
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: true
+  dmarc_policy: quarantine

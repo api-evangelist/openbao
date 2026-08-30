@@ -1,0 +1,21 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/ ; https://openbao.org/downloads/ ; https://github.com/openbao/openbao/blob/main/LICENSE
+name: OpenBao plans and pricing
+plan_count: 0
+pricing_page: null
+note: >-
+  OpenBao publishes no plans, tiers or prices, and this is a deliberate structural fact rather than a
+  gap in the profile. OpenBao is free and open source software licensed MPL-2.0, developed under the
+  Linux Foundation as a sandbox project of the OpenSSF. There is no vendor, no hosted service, no
+  account to create and nothing to buy - a user downloads the binary or container image and runs it
+  on their own infrastructure. The whole site has no /pricing, no sign-up and no login, so no Pricing
+  or SignUp pointer is emitted in apis.yml. Commercial support exists only through third parties
+  listed on the ecosystem pages (vendors, integrators and supporters), which are other companies'
+  offerings and not OpenBao plans.
+license: MPL-2.0
+cost_model: free-open-source-self-hosted
+commercial_support:
+  first_party: false
+  third_party_directory: https://openbao.org/ecosystem/vendors/
+plans: []
