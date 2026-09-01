@@ -1,0 +1,69 @@
+generated: '2026-08-27'
+method: probed
+source: https://openbao.org/ ; https://www.openbao.org/
+name: OpenBao /.well-known probe
+note: >-
+  Every /.well-known path probed on both openbao.org and www.openbao.org returned 404. The site is a
+  Docusaurus static build served from GitHub Pages and its 404 handler returns an HTML page, so each
+  miss is a genuine 404 status with an HTML body, not a soft-200. NO WellKnown or SecurityTxt pointer
+  is emitted in apis.yml: nothing was served, and the pointer would assert a surface the project does
+  not publish. Note that the OAuth/OIDC discovery documents an OpenBao deployment does serve
+  (/v1/identity/oidc/provider/:name/.well-known/openid-configuration and .../keys) live on an
+  operator's own running instance, not on openbao.org, and are therefore not probeable here.
+hosts:
+- host: openbao.org
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+    file: null
+  - path: /.well-known/openid-configuration
+    status: 404
+    file: null
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    file: null
+  - path: /.well-known/api-catalog
+    status: 404
+    file: null
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    file: null
+  - path: /.well-known/agent-card.json
+    status: 404
+    file: null
+  - path: /.well-known/agent.json
+    status: 404
+    file: null
+  - path: /llms.txt
+    status: 404
+    file: null
+  - path: /robots.txt
+    status: 200
+    file: null
+- host: www.openbao.org
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+    file: null
+  - path: /.well-known/openid-configuration
+    status: 404
+    file: null
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    file: null
+  - path: /.well-known/api-catalog
+    status: 404
+    file: null
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    file: null
+  - path: /.well-known/agent-card.json
+    status: 404
+    file: null
+  - path: /.well-known/agent.json
+    status: 404
+    file: null
+  - path: /llms.txt
+    status: 404
+    file: null
+checked: '2026-08-27'

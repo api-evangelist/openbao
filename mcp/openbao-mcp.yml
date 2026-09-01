@@ -1,0 +1,85 @@
+generated: '2026-08-27'
+method: derived
+source: https://openbao.org/docs/api/ ; https://github.com/openbao (org repository listing)
+name: OpenBao MCP
+status: candidate
+deployment:
+  mode: none
+  endpoint: null
+  install: null
+  package: null
+  auth: unknown
+  verified: searched
+note: >-
+  OpenBao publishes NO MCP server. The openbao GitHub organisation contains no MCP repository, the
+  documentation site has no MCP page, and a GitHub search for "openbao mcp" returns only unaffiliated
+  third-party projects (Knuckles-Team/openbao-mcp, Nathan-E-White/openbao-codex-plugin,
+  papastanb/Bao_MCP, shbert/mcp-vault), all at zero stars and none published by the project. Those are
+  deliberately not recorded as OpenBao surfaces. The tools[] below are a DERIVED candidate list from
+  the project's own published HTTP API reference - they describe what an MCP server over OpenBao would
+  expose, and no such server exists today.
+  A further consideration for anyone building one: OpenBao's own AGENTS.md (see skills/) instructs
+  agents that AI-generated contributions to the project are rejected. That governs contributions to
+  the repository, not calling a running OpenBao instance, but it is the project's stated posture on
+  agents and belongs next to any MCP work.
+surfaces:
+  openapi: runtime-generated per instance at GET /v1/sys/internal/specs/openapi (not published as a static file)
+  graphql: null
+  mcp: null
+tools:
+- name: read_secret
+  category: kv
+  rest: GET /v1/:mount/data/:path
+  note: KV v2 read, optional ?version=
+- name: write_secret
+  category: kv
+  rest: POST /v1/:mount/data/:path
+  note: Creates a new version. Supports check-and-set via options.cas.
+- name: list_secrets
+  category: kv
+  rest: LIST /v1/:mount/metadata/:path
+- name: delete_secret_version
+  category: kv
+  rest: DELETE /v1/:mount/data/:path
+  note: Soft delete - reversible via undelete.
+- name: undelete_secret_version
+  category: kv
+  rest: POST /v1/:mount/undelete/:path
+- name: destroy_secret_version
+  category: kv
+  rest: POST /v1/:mount/destroy/:path
+  note: Irreversible.
+- name: login
+  category: auth
+  rest: POST /v1/auth/:method/login/...
+- name: lookup_token
+  category: auth
+  rest: GET /v1/auth/token/lookup-self
+- name: renew_lease
+  category: lease
+  rest: POST /v1/sys/leases/renew
+- name: revoke_lease
+  category: lease
+  rest: POST /v1/sys/leases/revoke
+- name: issue_certificate
+  category: pki
+  rest: POST /v1/pki/issue/:role
+- name: encrypt
+  category: transit
+  rest: POST /v1/transit/encrypt/:name
+- name: decrypt
+  category: transit
+  rest: POST /v1/transit/decrypt/:name
+- name: read_health
+  category: sys
+  rest: GET /v1/sys/health
+  note: Unauthenticated.
+- name: seal_status
+  category: sys
+  rest: GET /v1/sys/seal-status
+  note: Unauthenticated.
+- name: get_openapi
+  category: sys
+  rest: GET /v1/sys/internal/specs/openapi
+  note: Returns the OpenAPI document for the paths the calling token can see.
+tool_count: 16

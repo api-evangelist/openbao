@@ -1,0 +1,95 @@
+# OpenBao
+
+> OpenBao is an open source, community-driven secrets and encryption management system, forked from
+> HashiCorp Vault in 2023 and governed by the Linux Foundation as a sandbox project of the OpenSSF.
+> It stores and tightly controls access to tokens, passwords, certificates and encryption keys, and
+> exposes every capability through a single JSON HTTP API prefixed with /v1/.
+
+Important: OpenBao is SELF-HOSTED software, not a hosted service. There is no vendor-operated API
+host, no account, no API key to sign up for and nothing to buy. The base URL is whatever instance an
+operator runs — the documentation uses http://127.0.0.1:8200/v1 throughout. Licensed MPL-2.0.
+
+Machine-readable contract: OpenBao does NOT publish a static OpenAPI file. A running instance
+generates one at GET /v1/sys/internal/specs/openapi, scoped to the permissions of the calling token,
+in OpenAPI 3.0.2 with three x-vault-* extensions (x-vault-sudo, x-vault-unauthenticated,
+x-vault-create-supported). Appending ?help=1 to any path returns that path's markdown help plus a
+scoped OpenAPI fragment. Published Protocol Buffers definitions cover the plugin and cluster RPC
+boundaries, not the HTTP API.
+
+Authentication: a client token in the X-Vault-Token header, or Authorization: Bearer <token>.
+Authorization is ACL policy attached to the token — there are no OAuth scopes for OpenBao's own API.
+Each auth method (approle, cert, jwt/oidc, kerberos, kubernetes, ldap, radius, userpass, token)
+exposes unauthenticated login endpoints. Namespaces are selected with X-Vault-Namespace.
+
+Errors: every status >= 400 returns {"errors": ["message"]}. There is no error-code registry and no
+application/problem+json. Note that 404 also means "LIST returned nothing" and is used deliberately
+to avoid state leakage, and that 429 means either a rate-limit quota or a standby node.
+
+## Documentation
+- [Documentation home](https://openbao.org/docs/): all product documentation
+- [HTTP API reference](https://openbao.org/docs/api/): every route, prefixed /v1/
+- [Developer quickstart](https://openbao.org/docs/get-started/developer-qs/): first calls
+- [Client libraries](https://openbao.org/docs/api/libraries/): the official Go client
+- [CLI commands](https://openbao.org/docs/commands/): the bao binary
+- [Installing OpenBao](https://openbao.org/docs/install/): package managers, containers, source
+- [Dev server mode](https://openbao.org/docs/concepts/dev-server/): bao server -dev, the local sandbox
+- [Generated OpenAPI endpoint](https://openbao.org/docs/api/system/internal-specs-openapi/)
+
+## Concepts an integrator needs
+- [Tokens](https://openbao.org/docs/concepts/tokens/)
+- [ACL policies](https://openbao.org/docs/concepts/policies/)
+- [Leases, renewal and revocation](https://openbao.org/docs/concepts/lease/)
+- [Response wrapping (X-Vault-Wrap-TTL)](https://openbao.org/docs/concepts/response-wrapping/)
+- [Namespaces](https://openbao.org/docs/concepts/namespaces/)
+- [Resource quotas / rate limiting](https://openbao.org/docs/concepts/resource-quotas/)
+- [Seal and unseal](https://openbao.org/docs/concepts/seal/)
+- [OIDC provider](https://openbao.org/docs/concepts/oidc-provider/)
+- [Audit devices](https://openbao.org/docs/audit/): including the http device, which POSTs every
+  audited request and response to an operator-specified endpoint
+
+## Reversibility — read before writing
+- KV v2 delete is a SOFT delete, reversible with POST /v1/:mount/undelete/:path until the version is
+  destroyed or aged out by max_versions (default 10) or delete_version_after.
+- POST /v1/:mount/destroy/:path is PERMANENT. So is DELETE /v1/:mount/metadata/:path, which removes
+  every version of the key.
+- Leases are revocable with /v1/sys/leases/revoke at any time before expiry, and renewable up to max TTL.
+- Certificates are revocable with /v1/pki/revoke; revocation is published via CRL and OCSP.
+- Disabling a mount (DELETE /v1/sys/mounts/:path) revokes everything under it and deletes its data.
+  There is no undo.
+
+## Project governance and policies
+- [Deprecation policy](https://openbao.org/community/policies/deprecation/): voted deprecation
+  periods and removal windows; NOT communicated in Deprecation/Sunset response headers
+- [Support and EoL policy](https://openbao.org/community/policies/support/): latest release, best effort
+- [CVE process](https://openbao.org/community/policies/cve/): 7 days to confirm, 90 days to patch
+- [OpenSSF Security Baseline status](https://openbao.org/community/policies/osps-baseline/)
+- [Release notes](https://openbao.org/community/release-notes/)
+- [Changelog](https://github.com/openbao/openbao/blob/main/CHANGELOG.md)
+- [Known issues](https://openbao.org/community/known-issues/)
+- [2026 development direction (roadmap)](https://github.com/openbao/openbao/issues/1974)
+
+## Agent policy — read this first
+- [AGENTS.md](https://github.com/openbao/openbao/blob/main/AGENTS.md): the OpenBao project REJECTS
+  all AI-generated contributions to its repositories and requires a robot emoji on the title of any
+  pull request an agent opens. AI is permitted only as an assistant — finding security issues,
+  answering questions, translating text a person wrote. This governs contributing to the project. It
+  does not restrict calling a running OpenBao instance's API, which is the operator's business.
+
+## Source and distribution
+- [GitHub organisation](https://github.com/openbao)
+- [Main repository](https://github.com/openbao/openbao)
+- [Go client: github.com/openbao/openbao/api/v2](https://pkg.go.dev/github.com/openbao/openbao/api/v2)
+- [Package repositories](https://pkgs.openbao.org/)
+- [Downloads, signatures and SBOMs](https://openbao.org/downloads/)
+- [Helm chart](https://github.com/openbao/openbao-helm)
+- [First-party plugins](https://github.com/openbao/openbao-plugins)
+
+## Optional
+- [Blog](https://openbao.org/blog/)
+- [Community](https://openbao.org/community/)
+- [Adopters](https://openbao.org/ecosystem/adopters/)
+- [Vendors and integrators](https://openbao.org/ecosystem/vendors/)
+
+---
+Generated by API Evangelist (https://apievangelist.com) on 2026-08-27 from OpenBao's own public
+documentation, repositories and package registries. Not published by OpenBao. method: generated.

@@ -1,0 +1,63 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/concepts/dev-server/ ; https://openbao.org/docs/get-started/developer-qs/ ; https://github.com/openbao/devbao
+name: OpenBao dev mode
+docs: https://openbao.org/docs/concepts/dev-server/
+summary: >-
+  OpenBao has no hosted sandbox because it has no hosted anything - it is self-hosted software. Its
+  equivalent is "dev" mode, a single-command in-memory instance that is pre-initialized, pre-unsealed
+  and pre-authenticated. Every feature of OpenBao is available in dev mode; the -dev flag only
+  short-circuits setup to insecure defaults.
+modes:
+- id: dev
+  command: bao server -dev
+  address: http://127.0.0.1:8200
+  tls: false
+  storage: in-memory, encrypted, lost on every restart
+  initialized: true
+  unsealed: true
+  authenticated: >-
+    The server stores the root token so the local bao CLI is immediately authenticated. API callers
+    must use the root token printed to stdout on startup.
+  unseal_keys: single unseal key, printed at startup
+  mounts: a KV v2 secrets engine is mounted at secret/ (use -dev-kv-v1 for v1)
+  warning: >-
+    The documentation is emphatic - never run a dev-mode server in production. It is insecure and
+    loses all data on restart.
+flags:
+- flag: -dev
+  description: Start in dev mode.
+- flag: -dev-root-token-id
+  description: >-
+    Set the root token to a known value instead of a generated one, so scripts can authenticate
+    without parsing stdout. The project's own scripts/gen_openapi.sh uses -dev-root-token-id=root.
+- flag: -dev-kv-v1
+  description: Mount KV version 1 at secret/ instead of version 2.
+- flag: -dev-listen-address
+  description: Bind the dev listener somewhere other than 127.0.0.1:8200.
+test_values:
+  published_fixtures: false
+  note: >-
+    OpenBao publishes no test cards, magic identifiers, sandbox credentials or hosted test tokens -
+    there is nothing to publish, because the instance is the developer's own and every secret in it is
+    one they put there. The only published test value is the convention of -dev-root-token-id=root
+    used in the project's own tooling, which is a local-only development token, not a credential to
+    any OpenBao-operated system.
+tooling:
+- name: devbao
+  url: https://github.com/openbao/devbao
+  official: true
+  description: First-party development environment for starting OpenBao (and Vault) instances, in the openbao GitHub organisation.
+- name: benchmark-openbao
+  url: https://github.com/openbao/benchmark-openbao
+  official: true
+  description: First-party load-generation and benchmarking tool.
+- name: openbao-helm
+  url: https://github.com/openbao/openbao-helm
+  official: true
+  description: Helm chart for standing up an instance on Kubernetes, including dev-mode examples.
+console:
+  present: true
+  note: >-
+    OpenBao ships a web UI served by the instance itself (enabled with ui = true in the listener
+    config, reachable at /ui/). It is part of the software, not a hosted console.

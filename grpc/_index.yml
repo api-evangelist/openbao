@@ -1,0 +1,58 @@
+generated: '2026-08-27'
+method: searched
+source: https://github.com/openbao/openbao (raw.githubusercontent.com/openbao/openbao/main)
+name: OpenBao Protobuf / gRPC contracts
+note: >-
+  These are the gRPC service contracts OpenBao publishes in its own source tree. They describe the
+  PLUGIN and CLUSTER RPC surfaces — how an external secrets/auth/database/KMS plugin talks to an
+  OpenBao core, and how a standby node forwards a request to the active node — not the /v1/ HTTP
+  API that end users call. They are saved verbatim, unmodified, from the openbao/openbao repository
+  default branch. Anyone writing an OpenBao plugin codes against these.
+license: MPL-2.0
+files:
+- file: openbao-backend.proto
+  source: https://github.com/openbao/openbao/blob/main/sdk/plugin/pb/backend.proto
+  package: pb
+  services:
+  - Backend
+  - Storage
+  - SystemView
+  summary: The core plugin backend RPC contract - HandleRequest, SpecialPaths, HandleExistenceCheck, Setup, Cleanup, plus the storage and system-view callbacks a plugin makes back into OpenBao.
+- file: openbao-database-v5.proto
+  source: https://github.com/openbao/openbao/blob/main/sdk/database/dbplugin/v5/proto/database.proto
+  package: dbplugin.v5
+  services:
+  - Database
+  summary: The v5 database secrets-engine plugin contract - Initialize, NewUser, UpdateUser, DeleteUser, Type, Close.
+- file: openbao-logical-identity.proto
+  source: https://github.com/openbao/openbao/blob/main/sdk/logical/identity.proto
+  package: logical
+  services: []
+  summary: Message definitions for Entity, Alias and Group identity objects passed across the plugin boundary.
+- file: openbao-logical-plugin.proto
+  source: https://github.com/openbao/openbao/blob/main/sdk/logical/plugin.proto
+  package: logical
+  services: []
+  summary: Plugin environment message definitions.
+- file: openbao-plugin-multiplexing.proto
+  source: https://github.com/openbao/openbao/blob/main/sdk/helper/pluginutil/multiplexing.proto
+  package: pluginutil
+  services:
+  - PluginMultiplexing
+  summary: Multiplexing handshake that lets one plugin process serve many mounts.
+- file: openbao-request-forwarding.proto
+  source: https://github.com/openbao/openbao/blob/main/internal/vault/forwarding/request_forwarding_service.proto
+  package: forwarding
+  services:
+  - RequestForwarding
+  summary: Cluster-internal RPC used by standby nodes to forward client requests and echo heartbeats to the active node.
+other_protos_not_captured:
+- internal/physical/raft/types.proto
+- internal/helper/identity/types.proto
+- internal/helper/forwarding/types.proto
+- internal/builtin/logical/kv/types.proto
+- internal/builtin/logical/pki/cert_template.proto
+- internal/vault/tokens/token.proto
+- sdk/database/dbplugin/database.proto (v4, legacy)
+- sdk/logical/version.proto
+- https://github.com/openbao/go-kms-wrapping (types.proto, plugin/pb/*.proto)

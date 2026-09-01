@@ -1,0 +1,157 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/community/policies/osps-baseline/ ; https://github.com/openbao/openbao/blob/main/.github/security-insights.yml ; https://github.com/openbao/openbao/blob/main/publiccode.yml ; https://openbao.org/docs/concepts/oidc-provider/ ; https://openbao.org/docs/api/
+name: OpenBao conformance
+summary: >-
+  OpenBao's conformance story runs in two directions, and they should not be confused. The API it
+  SERVES implements several IETF standards - OIDC provider, JWT-based auth, ACME issuance, PKCS#11 -
+  because those are the protocols a secrets manager has to speak. Separately, the PROJECT conforms to
+  open-source supply-chain governance standards - the OpenSSF Open Source Project Security Baseline,
+  the OpenSSF Security Insights manifest, publiccode.yml - which is unusually well documented and is
+  the strongest published-compliance signal OpenBao has.
+standards:
+- id: osps-baseline
+  name: OpenSSF Open Source Project Security Baseline
+  conforms: true
+  level: Level 1
+  evidence:
+    url: https://openbao.org/community/policies/osps-baseline/
+    detail: >-
+      A published, per-control implementation status table. 20 of the 21 Level 1 controls are marked
+      met with a written justification each (OSPS-AC-01/02/03, BR-03, DO-01/02, GV-02/03, LE-02/03,
+      QA-01/02/04/05, VM-02); OSPS-BR-01.01 (CI/CD input parameter sanitisation) is listed without a
+      completion mark. Recording the one gap alongside the twenty is the point - the project publishes
+      its own incomplete row rather than only the wins.
+- id: openssf-security-insights
+  name: OpenSSF Security Insights
+  version: 2.2.0
+  conforms: true
+  machine_readable: true
+  evidence:
+    url: https://github.com/openbao/openbao/blob/main/.github/security-insights.yml
+    detail: >-
+      A machine-readable security manifest at .github/security-insights.yml, schema-version 2.2.0,
+      last reviewed 2026-07-28. Names every project administrator with affiliation and contact, and
+      enumerates the repositories in scope. This is a genuine machine-readable governance artifact and
+      is rarer in the catalog than any of the API-side standards below.
+- id: publiccode
+  name: publiccode.yml
+  version: 0.5.0
+  conforms: true
+  machine_readable: true
+  evidence:
+    url: https://github.com/openbao/openbao/blob/main/publiccode.yml
+    detail: >-
+      A publiccode.yml 0.5.0 descriptor at the repository root - the public-sector software metadata
+      standard - declaring categories it-security and identity-management, MPL-2.0 licensing,
+      community maintenance, the documentation and apiDocumentation URLs, and the roadmap issue.
+- id: oidc
+  name: OpenID Connect (provider)
+  conforms: true
+  role: provider
+  evidence:
+    url: https://openbao.org/docs/concepts/oidc-provider/
+    detail: >-
+      A running OpenBao instance can act as an OIDC provider, serving its own discovery document at
+      /v1/identity/oidc/provider/:name/.well-known/openid-configuration and a JWKS at .../keys, and
+      issuing ID tokens against identity entities. Note this is OpenBao issuing OIDC to third parties;
+      OpenBao's OWN API is not OAuth-protected.
+- id: oauth2-jwt
+  name: OAuth 2.0 / JWT bearer authentication (consumer)
+  conforms: partial
+  role: consumer
+  evidence:
+    url: https://openbao.org/docs/api/auth/jwt/
+    detail: >-
+      The jwt auth method validates JWTs and supports a full OIDC login flow, exchanging an external
+      identity for an OpenBao token. There is no OAuth authorization-code flow for OpenBao's own API
+      and consequently no OAuth scope surface - authorization is ACL policy, not scopes.
+- id: acme
+  name: ACME (RFC 8555)
+  conforms: true
+  evidence:
+    url: https://openbao.org/community/rfcs/acme-tls-listeners/
+    detail: >-
+      The PKI secrets engine implements an ACME server, and OpenBao listeners can themselves obtain
+      certificates over ACME. Design recorded as a project RFC.
+- id: pkcs11
+  name: PKCS#11
+  conforms: true
+  evidence:
+    url: https://openbao.org/docs/configuration/seal/
+    detail: >-
+      HSM-backed auto-unseal through PKCS#11 libraries. As of v2.6.0 seal mechanisms are distributed
+      as external kms plugins, with a note that a misbehaving PKCS#11 library no longer forces a full
+      instance restart.
+- id: rfc9457
+  name: RFC 9457 Problem Details for HTTP APIs
+  conforms: false
+  evidence:
+    url: https://openbao.org/docs/api/
+    detail: >-
+      Errors use a bespoke {"errors": ["..."]} envelope with free-text strings and no type URI, no
+      error code and no per-field detail. Not application/problem+json.
+- id: rfc8594
+  name: RFC 8594 Sunset header
+  conforms: false
+  evidence:
+    url: https://openbao.org/community/policies/deprecation/
+    detail: >-
+      OpenBao has a genuine, ratified, voted deprecation policy - but it is communicated through the
+      website, changelog and mailing list, never in Deprecation or Sunset response headers. A client
+      cannot learn about a deprecation at runtime.
+- id: openapi
+  name: OpenAPI 3.0.2
+  conforms: partial
+  evidence:
+    url: https://openbao.org/docs/api/system/internal-specs-openapi/
+    detail: >-
+      OpenBao generates an OpenAPI 3.0.2 document describing the mounted backends, served at
+      GET /v1/sys/internal/specs/openapi and scoped to the requesting token's permissions. It carries
+      three x-vault-* extensions (x-vault-sudo, x-vault-unauthenticated, x-vault-create-supported).
+      Marked partial rather than true because the project's own docs say only /sys endpoints have
+      moved to the richer path-definition structure and other endpoints get basic generated
+      documentation - and because the document is never published as a static file.
+- id: grpc-protobuf
+  name: gRPC / Protocol Buffers
+  conforms: true
+  evidence:
+    url: https://github.com/openbao/openbao/tree/main/sdk/plugin/pb
+    detail: >-
+      Published .proto service definitions for the plugin boundary (Backend, Storage, SystemView,
+      Database v5, PluginMultiplexing) and for cluster request forwarding. Captured verbatim in grpc/.
+- id: spdx-sbom
+  name: SBOM publication
+  conforms: true
+  evidence:
+    url: https://openbao.org/downloads/
+    detail: SBOMs are published on each GitHub release page, per the downloads page and the release checklist.
+- id: sigstore-cosign
+  name: Sigstore / CoSign artifact signing
+  conforms: true
+  evidence:
+    url: https://openbao.org/community/policies/release/
+    detail: The release checklist requires verifying CoSign and GPG signatures on binaries and CoSign signatures on container images before publishing.
+- id: oci-image-spec
+  name: OCI image labels
+  conforms: true
+  evidence:
+    url: https://github.com/openbao/openbao/blob/main/CHANGELOG.md
+    detail: v2.6.1 restored legacy non-OCI labels alongside opencontainers labels; UBI images meet Red Hat certification label requirements.
+domain_standard:
+  market: secrets management / key management
+  finding: >-
+    There is no single dominant machine-readable domain standard for secrets management that OpenBao
+    declares in its contract, so nothing is asserted here. The closest candidates are real but
+    partial: ACME (RFC 8555) for the PKI issuance surface and PKCS#11 for the seal/HSM surface, both
+    recorded above with evidence. KMIP - the one interchange standard this market does have - is NOT
+    implemented by OpenBao; it was a HashiCorp Vault Enterprise feature and did not come across the
+    fork. This slot is left unfilled deliberately rather than stretched to fit.
+  declared_in_contract: false
+certifications:
+  published: []
+  note: >-
+    No SOC 2, ISO 27001, PCI DSS, HIPAA or FedRAMP attestations, and none are expected - those certify
+    an operator of a service, and OpenBao operates nothing. The compliance posture that IS published
+    is the OSPS Baseline table and the Security Insights manifest above, which is what the Compliance
+    pointer in apis.yml refers to.

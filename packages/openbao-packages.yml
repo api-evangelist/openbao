@@ -1,0 +1,105 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/api/libraries/ ; https://openbao.org/docs/install/ ; proxy.golang.org ; formulae.brew.sh
+name: OpenBao packages and client libraries
+note: >-
+  OpenBao ships ONE official client library - the Go client, versioned as a submodule of the main
+  repository. Its own docs say so explicitly and add that OpenBao intends to remain API-compatible
+  with HashiCorp Vault, so existing Vault client libraries in other languages are expected to work;
+  those are third-party and are not counted as OpenBao SDKs here. The rest of the distribution
+  surface is the server itself - Homebrew, FreeBSD pkg, Arch, EPEL/Fedora, Debian/Ubuntu/Amazon
+  Linux repos at pkgs.openbao.org, and container images on ghcr.io, quay.io and docker.io.
+packages:
+- name: github.com/openbao/openbao/api/v2
+  registry: go
+  official: true
+  language: Go
+  kind: sdk
+  url: https://pkg.go.dev/github.com/openbao/openbao/api/v2
+  install: go get github.com/openbao/openbao/api/v2
+  version: v2.6.0
+  published: '2026-06-22'
+  source: https://proxy.golang.org/github.com/openbao/openbao/api/v2/@latest
+  note: The only client library OpenBao lists as officially maintained. Tagged as api/v2.6.0 in the openbao/openbao repository.
+- name: github.com/openbao/openbao/sdk/v2
+  registry: go
+  official: true
+  language: Go
+  kind: plugin-sdk
+  url: https://pkg.go.dev/github.com/openbao/openbao/sdk/v2
+  install: go get github.com/openbao/openbao/sdk/v2
+  version: v2.6.2
+  published: '2026-07-22'
+  source: https://proxy.golang.org/github.com/openbao/openbao/sdk/v2/@latest
+  note: Plugin-authoring SDK (secrets engines, auth methods, database plugins), not an API client.
+- name: github.com/openbao/go-kms-wrapping
+  registry: go
+  official: true
+  language: Go
+  kind: library
+  url: https://github.com/openbao/go-kms-wrapping
+  version: null
+  published: null
+  note: External KMS interfaces and providers for OpenBao auto-unseal. Version not read - the module is published as several versioned submodules rather than one root module, so a single @latest is not meaningful.
+- name: openbao
+  registry: homebrew
+  official: true
+  language: null
+  kind: server-cli
+  url: https://formulae.brew.sh/formula/openbao
+  install: brew install openbao
+  version: 2.6.2
+  published: '2026-08-18'
+  source: https://formulae.brew.sh/api/formula/openbao.json
+  note: >-
+    Formula stable version read from the Homebrew API. The published date is the date of the matching
+    OpenBao v2.6.2 upstream release rather than a Homebrew-published timestamp - the formula API does
+    not expose a release date field.
+- name: ghcr.io/openbao/openbao
+  registry: cdn
+  official: true
+  kind: container
+  url: https://github.com/openbao/openbao/pkgs/container/openbao
+  version: 2.6.2
+  published: '2026-08-18'
+  note: >-
+    Alpine-based container image. Also published to quay.io/openbao/openbao and
+    docker.io/openbao/openbao, with RHEL UBI variants under openbao-ubi and a distroless variant
+    under openbao-distroless (added in v2.6.0). Version tracks the upstream release; the tag `latest`
+    floats, so a consumer pinning `latest` cannot tell which build they are getting.
+- name: openbao (EPEL / Fedora / Arch / FreeBSD / Debian)
+  registry: os-package
+  official: true
+  kind: server-cli
+  url: https://pkgs.openbao.org/
+  install: dnf install -y openbao  |  pacman -Sy openbao  |  pkg install openbao
+  version: null
+  published: null
+  note: >-
+    OpenBao runs its own package repositories at pkgs.openbao.org for Amazon Linux, Debian, Fedora,
+    RHEL and Ubuntu, and is additionally packaged in Arch Linux and EPEL. Version not recorded - these
+    are per-distribution repositories with no single unauthenticated metadata endpoint to read a
+    canonical latest from.
+- name: VaultCourier
+  registry: swiftpm
+  official: false
+  language: Swift
+  kind: sdk
+  url: https://openbao.org/docs/api/libraries/
+  version: null
+  published: null
+  note: Listed by OpenBao under "Community" client libraries, explicitly not maintained by the project. Not counted as an official SDK.
+not_found:
+- registry: npm
+  note: No first-party OpenBao JavaScript/TypeScript client published. A registry search returns only third-party integrations (secret loaders, migration tools, MCP guards) from unaffiliated authors.
+- registry: pypi
+  note: No first-party OpenBao Python client. pypi.org/pypi/openbao/json, /openbao-client/json and /bao-client/json all returned 404 on 2026-08-27.
+- registry: maven
+  note: No first-party Java client published.
+- registry: nuget
+  note: No first-party .NET client published.
+- registry: rubygems
+  note: No first-party Ruby client published.
+- registry: crates.io
+  note: No first-party Rust client published.
+official_sdk_count: 1

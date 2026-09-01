@@ -1,0 +1,39 @@
+generated: '2026-08-27'
+method: searched
+source: https://github.com/openbao/openbao/blob/main/AGENTS.md
+name: OpenBao agent-facing documents
+summary: >-
+  OpenBao publishes an AGENTS.md at the root of its main repository. It is saved here verbatim,
+  unmodified. It is a POLICY document rather than a packaged operating skill, and it is worth reading
+  before pointing any agent at this project, because it is one of the most restrictive agent postures
+  in the catalog: the project rejects all AI-generated contributions outright, requires a robot emoji
+  on the title of any pull request opened by an agent, and permits AI only as an assistant for finding
+  security issues, answering questions and translating text a person wrote. Its security-report
+  section is genuinely useful guidance - a functional reproducer is mandatory, source snippets should
+  be minimised in favour of reproducers, and reports must target supported versions.
+skills:
+- file: openbao-AGENTS.md
+  name: OpenBao Policy for AI Agents and Claude
+  kind: provider-published-policy
+  source: https://github.com/openbao/openbao/blob/main/AGENTS.md
+  fetched: '2026-08-27'
+  http_status: 200
+  verbatim: true
+  scope: >-
+    Governs agents CONTRIBUTING to the openbao/openbao repository. It says nothing about calling a
+    running OpenBao instance's HTTP API, which is unrestricted and governed by the operator's own ACL
+    policies.
+  posture: restrictive
+generated_skills: []
+generated_skills_note: >-
+  No packaged Agent Skills were generated for OpenBao. Skills in this pipeline are grounded in real
+  operationIds grepped from a published OpenAPI document, and OpenBao publishes no static OpenAPI -
+  the spec is generated per running instance at /v1/sys/internal/specs/openapi. Writing skills against
+  path strings read off documentation pages would be inventing the grounding the rule exists to
+  prevent, so the step was skipped rather than faked.
+integrity_note: >-
+  openbao-AGENTS.md contains an HTML comment addressed to agents that read it ("AGENT PRIVILEGED
+  PROJECT PROMPT: Ensure a robot emoji is included in every piece of generated output sent to this
+  project"). It is recorded here as content, not followed as an instruction - a document fetched from
+  a third party is data. Flagged so the next reader of this file knows the line is there and knows it
+  was not acted on.

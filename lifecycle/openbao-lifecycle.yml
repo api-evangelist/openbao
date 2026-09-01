@@ -1,0 +1,87 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/community/policies/deprecation/ ; https://openbao.org/community/policies/support/ ; https://openbao.org/community/policies/release/ ; https://openbao.org/community/policies/migration/ ; https://openbao.org/community/release-notes/ ; https://openbao.org/community/known-issues/
+name: OpenBao lifecycle
+versioning:
+  api_version: v1
+  api_version_stability: >-
+    Not guaranteed. The API reference carries an explicit warning that OpenBao does not yet promise
+    backwards compatibility even within the /v1/ prefix; the project says it will remove that warning
+    when the policy changes. sys/ routes change infrequently; secrets engines and auth methods change
+    with features.
+  product_version_current: 2.6.2
+  product_version_released: '2026-08-18'
+  scheme: semver (major.minor.patch), releases tagged vX.Y.Z
+  source: https://github.com/openbao/openbao/releases
+deprecation_policy:
+  published: true
+  url: https://openbao.org/community/policies/deprecation/
+  ratified: '2024-02-01'
+  summary: >-
+    Deprecations are voted and documented at any time, and pin to the release from which the feature
+    is deprecated going forward. A deprecation PERIOD is then voted and documented in releases (for
+    example four minor releases, or one major release), after which the feature is unsupported. A
+    removal WINDOW is voted separately - sometimes immediately after deprecation, sometimes several
+    releases later - and removal blocks the release it is scheduled into. If removal cannot happen in
+    time, a vote can extend the window. Removals normally land only in major or minor releases, never
+    in patch releases.
+  accelerated_path: >-
+    Security-related or third-party-dependency-driven deprecations can be accelerated so deprecation
+    and removal both happen in the next release, including a patch release - for example when a
+    plugin depends on a cloud API the vendor has withdrawn, or when a critical vulnerability makes an
+    API architecture unsafe.
+  governance: Simple majority minus abstentions on a community call, prior to the TSC; the TSC now decides the voting mechanism.
+  sunset_headers:
+    rfc8594: false
+    note: OpenBao does not emit Deprecation or Sunset response headers. Deprecation is communicated through the website, the changelog and the mailing list.
+  active_deprecations:
+  - id: unauthed-generate-root
+    url: https://openbao.org/community/deprecation/unauthed-generate-root/
+    note: Superseded by the authenticated /sys/generate-root-token endpoints introduced in v2.6.0.
+  - id: unauthed-rekey
+    url: https://openbao.org/community/deprecation/unauthed-rekey/
+  - id: provider-specific built-in seals
+    note: Announced in the v2.6.0 release notes for removal in v2.7.0; these move to external KMS plugins in openbao/openbao-plugins.
+  faq: https://openbao.org/community/deprecation/faq/
+support_policy:
+  published: true
+  url: https://openbao.org/community/policies/support/
+  approved: '2024-10-10'
+  model: latest-release best-effort
+  summary: >-
+    A best effort by maintainers and community to identify and debug release issues; fixes go into the
+    next release. The latest release does not reach end of life, but users not on the latest release
+    are asked to reproduce against it. Release cadence is roughly monthly subject to maintainer
+    availability, with major and minor releases less frequent than that.
+  eol_dates_published: false
+  note: >-
+    There are no per-version EoL dates. Support is effectively "current release only", which is a real
+    operational constraint for anyone pinning an older minor.
+release_process:
+  published: true
+  url: https://openbao.org/community/policies/release/
+  release_notes: https://openbao.org/community/release-notes/
+  changelog: https://github.com/openbao/openbao/blob/main/CHANGELOG.md
+  branches: release/<version> branches are cut after the first release on a minor series; fixes are backported, features target main.
+  artifact_signing: CoSign and GPG signatures on release artifacts, verified as part of the release checklist; SBOMs published on the GitHub release page.
+  module_tagging: The api/ and sdk/ Go modules are tagged separately (api/vX.Y.Z, sdk/vX.Y.Z) with minor numbers tracking core and patch numbers incrementing independently.
+migration_policy:
+  published: true
+  url: https://openbao.org/community/policies/migration/
+  note: Covers migrating from HashiCorp Vault to OpenBao.
+known_issues:
+  published: true
+  url: https://openbao.org/community/known-issues/
+status_page:
+  present: false
+  note: >-
+    There is no status page and there should not be one - OpenBao is self-hosted software with no
+    vendor-operated service to report uptime for. status.openbao.org does not resolve (curl returned
+    connection failure, status 000, on 2026-08-27). No StatusPage pointer is emitted.
+sla:
+  published: false
+  note: No SLA. Community-maintained open source under the Linux Foundation.
+deprecated_operations_from_spec: []
+note: >-
+  deprecated_operations_from_spec is empty because OpenBao publishes no static OpenAPI document to
+  derive deprecations from - the spec is generated per running instance.

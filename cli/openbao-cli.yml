@@ -1,0 +1,98 @@
+generated: '2026-08-27'
+method: searched
+source: https://openbao.org/docs/commands/ ; https://openbao.org/docs/install/
+name: bao
+docs: https://openbao.org/docs/commands/
+official: true
+summary: >-
+  bao is OpenBao's first-party CLI and is a full client of the HTTP API - the docs state plainly that
+  the CLI uses the HTTP API to reach OpenBao the same way any other consumer does, so every command
+  below has an API equivalent. The same binary is both the client and the server (bao server).
+install:
+- method: homebrew
+  command: brew install openbao
+  platform: macOS
+- method: freebsd-pkg
+  command: pkg install openbao
+  platform: FreeBSD
+- method: pacman
+  command: pacman -Sy openbao
+  platform: Arch Linux
+- method: dnf
+  command: dnf install -y epel-release && dnf install -y openbao
+  platform: Fedora / RHEL and derivatives
+- method: apt-rpm-repo
+  command: see https://pkgs.openbao.org/
+  platform: Amazon Linux, Debian, Fedora, RHEL, Ubuntu
+- method: container
+  command: docker run ghcr.io/openbao/openbao
+  platform: any
+  note: also quay.io/openbao/openbao and docker.io/openbao/openbao; UBI and distroless variants available
+- method: binary
+  command: download and unzip the release archive; the single `bao` binary is all that is required
+  platform: any
+  note: GPG and CoSign signatures plus SBOMs published on the GitHub release page
+- method: source
+  command: git clone https://github.com/openbao/openbao && make bootstrap && make dev
+  platform: any
+  note: development builds only; the packaging guide covers release builds
+- method: helm
+  command: helm install openbao openbao/openbao
+  platform: Kubernetes
+  note: chart at https://github.com/openbao/openbao-helm
+environment:
+  BAO_ADDR: Address of the OpenBao server the CLI talks to. Defaults to http://127.0.0.1:8200 in dev mode.
+  BAO_TOKEN: Client token; the CLI also caches a token in ~/.bao-token after bao login.
+  BAO_NAMESPACE: Namespace to scope requests to, equivalent to the X-Vault-Namespace header.
+  note: VAULT_-prefixed equivalents are retained for compatibility with HashiCorp Vault tooling; the project's own gen_openapi.sh script still exports VAULT_ADDR.
+command_groups:
+- group: server and lifecycle
+  commands: [server, status, monitor, debug, version, version-history, print]
+- group: authentication
+  commands: [login, token create, token lookup, token renew, token revoke, token capabilities, token-helper]
+- group: auth methods
+  commands: [auth enable, auth disable, auth list, auth move, auth tune, auth help]
+- group: secrets engines
+  commands: [secrets enable, secrets disable, secrets list, secrets move, secrets tune]
+- group: generic data access
+  commands: [read, write, patch, delete, list, path-help, unwrap]
+- group: kv
+  commands: [kv get, kv put, kv patch, kv delete, kv undelete, kv destroy, kv list, kv metadata, kv rollback, kv enable-versioning]
+  note: kv undelete and kv rollback are the reversal commands for the KV v2 write surface - see conventions/openbao-conventions.yml.
+- group: leases
+  commands: [lease lookup, lease renew, lease revoke]
+- group: policy
+  commands: [policy read, policy write, policy list, policy delete, policy fmt]
+- group: namespaces
+  commands: [namespace]
+- group: pki
+  commands: [pki issue, pki reissue, pki verify-sign, pki list-intermediates, pki health-check]
+- group: plugins
+  commands: [plugin register, plugin deregister, plugin info, plugin init, plugin list, plugin reload]
+- group: operator
+  commands: [operator init, operator unseal, operator seal, operator rekey, operator rotate, operator rotate-keys, operator key-status, operator generate-root, operator step-down, operator members, operator migrate, operator raft, operator diagnose, operator validate-config]
+- group: audit
+  commands: [audit enable, audit disable, audit list]
+- group: transit
+  commands: [transit import]
+- group: ssh, agent and proxy
+  commands: [ssh, agent, proxy]
+command_surface_source: https://openbao.org/docs/commands/ (enumerated from the documentation sitemap, 2026-08-27)
+documented_command_pages: 89
+key_flows:
+- name: Start a throwaway instance and read a secret
+  steps:
+  - bao server -dev
+  - export BAO_ADDR=http://127.0.0.1:8200
+  - bao kv put secret/my-app password=hunter2
+  - bao kv get secret/my-app
+- name: Recover a soft-deleted secret version
+  steps:
+  - bao kv delete secret/my-app
+  - bao kv undelete -versions=2 secret/my-app
+- name: Inspect what the current token may do
+  steps:
+  - bao token capabilities secret/data/my-app
+help_convention: >-
+  bao path-help <path> and the API's ?help=1 query parameter return the same markdown help block,
+  and ?help=1 additionally returns a scoped OpenAPI fragment for the path and everything under it.
