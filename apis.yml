@@ -1,17 +1,16 @@
 aid: openbao
 name: OpenBao
-description: >-
-  OpenBao is an open source, community-driven identity-based secrets and encryption management
-  system, forked from HashiCorp Vault in 2023 and governed by the Linux Foundation as a sandbox
-  project of the Open Source Security Foundation (OpenSSF). It stores and tightly controls access
-  to tokens, passwords, certificates and encryption keys, and exposes every one of its capabilities
-  — key/value secrets, dynamic database credentials, PKI issuance, transit encryption, leasing and
-  revocation, policy and namespace administration, seal/unseal and cluster operations — through a
-  single JSON HTTP API prefixed with /v1/. OpenBao is self-hosted software rather than a hosted
-  service, so there is no vendor-operated base URL: the API is served by whatever instance an
-  operator runs, and the CLI, the web UI and the official Go client all speak the same HTTP API.
-  The machine-readable OpenAPI document is generated per instance at runtime from the mounted
-  backends and is served at /v1/sys/internal/specs/openapi rather than published as a static file.
+description: 'OpenBao is an open source, community-driven identity-based secrets and encryption management
+  system, forked from HashiCorp Vault in 2023 and governed by the Linux Foundation as a sandbox project
+  of the Open Source Security Foundation (OpenSSF). It stores and tightly controls access to tokens, passwords,
+  certificates and encryption keys, and exposes every one of its capabilities — key/value secrets, dynamic
+  database credentials, PKI issuance, transit encryption, leasing and revocation, policy and namespace
+  administration, seal/unseal and cluster operations — through a single JSON HTTP API prefixed with /v1/.
+  OpenBao is self-hosted software rather than a hosted service, so there is no vendor-operated base URL:
+  the API is served by whatever instance an operator runs, and the CLI, the web UI and the official Go
+  client all speak the same HTTP API. The machine-readable OpenAPI document is generated per instance
+  at runtime from the mounted backends and is served at /v1/sys/internal/specs/openapi rather than published
+  as a static file.'
 url: https://raw.githubusercontent.com/api-evangelist/openbao/refs/heads/main/apis.yml
 deliveryModel:
   model: saas
@@ -72,26 +71,24 @@ tags_raw:
 - DevOps
 - Infrastructure
 apis:
-- aid: openbao-http-api
+- aid: openbao:openbao-http-api
   name: OpenBao HTTP API
-  description: >-
-    The OpenBao HTTP API gives full access to every OpenBao capability over REST-like HTTP verbs.
-    All routes are prefixed with /v1/ and the API is versioned only at that prefix. Authentication
-    is by client token, supplied either in the X-Vault-Token header or as an Authorization Bearer
-    token; each auth method additionally exposes unauthenticated login endpoints. Namespaces are
-    selected with the X-Vault-Namespace header or by full path. Requests and responses are JSON,
-    LIST is used as an HTTP verb alongside GET/POST/PUT/PATCH/DELETE, and errors are returned in a
-    common {"errors": [...]} envelope for any status >= 400.
+  description: 'The OpenBao HTTP API gives full access to every OpenBao capability over REST-like HTTP
+    verbs. All routes are prefixed with /v1/ and the API is versioned only at that prefix. Authentication
+    is by client token, supplied either in the X-Vault-Token header or as an Authorization Bearer token;
+    each auth method additionally exposes unauthenticated login endpoints. Namespaces are selected with
+    the X-Vault-Namespace header or by full path. Requests and responses are JSON, LIST is used as an
+    HTTP verb alongside GET/POST/PUT/PATCH/DELETE, and errors are returned in a common {"errors": [...]}
+    envelope for any status >= 400.'
   humanURL: https://openbao.org/docs/api/
   baseURL: https://{bao_address}/v1
-  x-base-url-note: >-
-    TEMPLATED ON PURPOSE - do not "repair" this to a concrete host. OpenBao is self-hosted software
-    with no vendor-operated API endpoint, so there is no base URL for the project to publish and it
-    publishes none. Its own documentation uses http://127.0.0.1:8200/v1 throughout, which is a local
-    dev-mode instance rather than a service. {bao_address} is the address of whatever instance the
-    operator runs, named after the BAO_ADDR environment variable the CLI and docs use.
-    repair-api-bases.py reports verdict no-usable-base for this repo; that verdict is expected here
-    and is a property of the delivery model, not a gap in the profile.
+  x-base-url-note: TEMPLATED ON PURPOSE - do not "repair" this to a concrete host. OpenBao is self-hosted
+    software with no vendor-operated API endpoint, so there is no base URL for the project to publish
+    and it publishes none. Its own documentation uses http://127.0.0.1:8200/v1 throughout, which is a
+    local dev-mode instance rather than a service. {bao_address} is the address of whatever instance the
+    operator runs, named after the BAO_ADDR environment variable the CLI and docs use. repair-api-bases.py
+    reports verdict no-usable-base for this repo; that verdict is expected here and is a property of the
+    delivery model, not a gap in the profile.
   tags:
   - Secrets Management
   - Security
