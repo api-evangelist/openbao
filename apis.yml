@@ -52,7 +52,7 @@ tags:
 - Certificates
 - PKI
 - Key Management
-- Open-Source
+- Open Source
 - Self-Hosted
 - Linux Foundation
 - DevOps
@@ -70,6 +70,7 @@ tags_raw:
 - Linux Foundation
 - DevOps
 - Infrastructure
+- Open-Source
 apis:
 - aid: openbao:openbao-http-api
   name: OpenBao HTTP API
