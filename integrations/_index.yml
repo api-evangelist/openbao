@@ -37,3 +37,51 @@
     detected: '2026-10-15'
   status: not-a-workflow
   arazzo: null
+- slug: openbao-go-module-proxy
+  label: Go module proxy
+  partner_name: Go module proxy
+  category: official SDK (Go)
+  type: register
+  channel: package-registry
+  evidence: https://pkg.go.dev/github.com/openbao/go-kms-wrapping
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: Go module proxy (public registry JSON)
+    spec_file: null
+    language: Go
+    packages:
+    - name: github.com/openbao/go-kms-wrapping
+      version: v0.7.1
+      released: '2022-03-04'
+      released_field: Time
+      lapsed: true
+      page: https://pkg.go.dev/github.com/openbao/go-kms-wrapping
+      repo_leg: github-org:openbao
+      publisher_leg: org:openbao
+      matched_by: github-org
+    - name: github.com/openbao/openbao/api/v2
+      version: v2.7.1
+      released: '2026-10-01'
+      released_field: Time
+      lapsed: false
+      page: https://pkg.go.dev/github.com/openbao/openbao/api/v2
+      repo_leg: github-org:openbao
+      publisher_leg: org:openbao
+      matched_by: github-org
+    - name: github.com/openbao/openbao/sdk/v2
+      version: v2.7.1
+      released: '2026-09-23'
+      released_field: Time
+      lapsed: false
+      page: https://pkg.go.dev/github.com/openbao/openbao/sdk/v2
+      repo_leg: github-org:openbao
+      publisher_leg: org:openbao
+      matched_by: github-org
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
